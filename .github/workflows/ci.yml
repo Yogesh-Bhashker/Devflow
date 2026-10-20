@@ -8,8 +8,33 @@ on:
 
 jobs:
   backend:
-    name: Backend — typecheck & build
+    name: Backend — typecheck, build & test
     runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: devflow
+          POSTGRES_PASSWORD: devflow
+          POSTGRES_DB: devflow_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
 
     steps:
       - name: Checkout code
@@ -33,6 +58,22 @@ jobs:
       - name: TypeScript build (typecheck + compile)
         working-directory: ./backend
         run: npm run build
+
+      - name: Apply DB migrations to test database
+        working-directory: ./backend
+        env:
+          DATABASE_URL: postgresql://devflow:devflow@localhost:5432/devflow_test
+        run: npx prisma migrate deploy
+
+      - name: Run tests
+        working-directory: ./backend
+        env:
+          NODE_ENV: test
+          DATABASE_URL: postgresql://devflow:devflow@localhost:5432/devflow_test
+          JWT_SECRET: test-secret-do-not-use-in-production
+          REDIS_URL: redis://localhost:6379
+          CORS_ORIGIN: http://localhost:5173
+        run: npm test
 
   frontend:
     name: Frontend — typecheck & build
