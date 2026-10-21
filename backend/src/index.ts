@@ -17,6 +17,7 @@ import { PORT, CORS_ORIGINS } from "./config/env";
 import { generalLimiter } from "./middleware/rateLimit.middleware";
 
 const app = express();
+app.set("trust proxy", 1);
 const httpServer = createServer(app);
 initSocket(httpServer);
 
