@@ -37,9 +37,9 @@ export default function App() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<Login onLoginSuccess={() => setLoggedIn(true)} />} />
           <Route path="/projects" element={loggedIn ? <Projects /> : <Navigate to="/login" replace />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="*" element={< Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>
-    </>
+    </> 
   );
 }
