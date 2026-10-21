@@ -19,15 +19,14 @@ async function createRefreshToken(userId: number) {
 function setRefreshCookie(res: Response, token: string) {
   res.cookie("refreshToken", token, {
     httpOnly: true,
-    secure: false, // set true once you deploy behind HTTPS
-    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production", // HTTPS ke liye true
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", // Cross-domain ke liye none
     maxAge: REFRESH_TOKEN_DAYS * 24 * 60 * 60 * 1000,
   });
 }
 
 export const register = async (req: Request, res: Response) => {
   try {
-    // Validation is handled by Zod in auth.routes.ts
     const { name, email, password } = req.body;
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -49,7 +48,6 @@ export const register = async (req: Request, res: Response) => {
 
 export const login = async (req: Request, res: Response) => {
   try {
-    // Validation is handled by Zod in auth.routes.ts
     const { email, password } = req.body;
 
     const user = await prisma.user.findUnique({ where: { email } });

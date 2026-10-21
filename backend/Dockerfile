@@ -41,4 +41,7 @@ COPY prisma ./prisma
 
 EXPOSE 5000
 
-CMD ["node", "dist/index.js"]
+EXPOSE 5000
+
+# Run migrations, then start the API server
+CMD ["sh", "-c", "npx prisma migrate deploy && node dist/index.js"]
